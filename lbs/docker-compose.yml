@@ -1,0 +1,186 @@
+#
+# docker-compose file pour le déploiement initial de l'application lbs
+# Documentation complète : https://bitbucket.org/canals5/docker-things
+#
+# IMPORTANT :
+#   - ajouter les vhosts des services web dans le fichier /etc/vhosts
+#     de la machine hôte :
+#     exemple pour le service api.catalogue :
+#     127.0.0.1   api.catalogue.local
+#   - pour accéder à ce service : https://api.catalogue.local:10443
+#                          ou   :  http://api.catalogue.local:10080
+#
+#
+# accès au service adminer : http://localhost:8080
+# accès au service mysql (bd catalogue) depuis le container api.catalogue :
+#     - utiliser le hostname "db"
+#     - database : catalogue_lbs
+#     - user : catalogue_lbs
+#     - password : catalogue_lbs
+#
+# IMPORTANT : POUR UNE UTILISATION SUR LES MACHINES DU RESEAU IUT :
+#   Décommenter la définition des variables http_proxy et https_proxy
+#
+
+version: "3"
+
+networks:
+  lbs_network:
+    driver: bridge
+
+services:
+  api.catalogue:
+    image: canals/php:latest
+    environment:
+      - VHOST_HOSTNAME=api.catalogue.local
+      - VHOST_DOCROOT=/var/www/api
+      - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+      - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+    ports:
+      - "10080:80"
+      - "10443:443"
+    volumes :
+      - ./catalogue/api:/var/www/api
+      - ./catalogue/src:/var/www/src
+    working_dir : /var/www/src
+    networks:
+      - lbs_network
+    links :
+      - mysql:db
+
+  api.commande:
+    image: canals/php:latest
+    environment:
+      - VHOST_HOSTNAME=api.commande.local
+      - VHOST_DOCROOT=/var/www/api
+      - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+      - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+    ports:
+      - "11080:80"
+      - "11443:443"
+    volumes :
+      - ./commande/api:/var/www/api
+      - ./commande/src:/var/www/src
+    working_dir : /var/www/src
+    networks:
+      - lbs_network
+    links :
+      - mysql_commande:db_commande
+  
+#############################
+# mysql catalogue  + adminer
+#############################
+  mysql:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=cataroot
+      - MYSQL_USER=catalogue_lbs
+      - MYSQL_PASSWORD=catalogue_lbs
+      - MYSQL_DATABASE=catalogue_lbs
+    ports:
+      - "3603:3306"
+    networks:
+      - lbs_network
+    volumes :
+      - ./sql:/var/sql
+
+  adminer:
+     image: adminer
+     ports:
+       - "8080:8080"
+     networks:
+       - lbs_network
+     links:
+       - mysql:db
+       - mysql_commande:db_commande
+
+#############################
+# mysql commande
+#############################
+  mysql_commande:
+    image: mariadb:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=cataroot
+      - MYSQL_USER=commande_lbs
+      - MYSQL_PASSWORD=commande_lbs
+      - MYSQL_DATABASE=commande_lbs
+    ports:
+      - "3604:3306"
+    networks:
+      - lbs_network
+    volumes :
+      - ./sql:/var/sql
+
+##############################################
+# A second php service
+##############################################
+
+#  api:
+#      image: canals/php
+#      container_name: api
+##      environment:
+#       - VHOST_HOSTNAME=api.local
+#       - VHOST_DOCROOT=/var/www/api
+#     ports:
+#       - "6080:80"
+#       - "6443:443"
+#     volumes :
+#       - ./api:/var/www/api
+#       - ./src:/var/www/src
+#       - ./html:/var/www/html
+#     links :
+#        - mysql:db
+
+##################################
+# postgres + adminer
+###################################
+# postgres:
+#   image: postgres
+#   container_name: postgres.local
+#   environment :
+#     - POSTGRES_PASSWORD = pgroot
+#     - POSTGRES_USER = pguser
+#   ports:
+#     - "5432:5432"
+
+# adminer-pg:
+#   image: adminer
+#   container_name: adminer_pg.dev.local
+#   ports:
+#     - "8088:8080"
+#   links:
+#     - postgres:db
+#
+
+################################################
+# mongodb & mongo-express
+###############################################
+## mongo:
+#   image: mongo:3.4
+#   container_name: mongo.dev.local
+#   ports:
+#       - 27017:27017
+
+# mongo-express:
+#      image: mongo-express:latest
+#      container_name: mongo_express.dev.local
+#      ports:
+#        - "8081:8081"
+#      links:
+#        - mongo:mongo
+
+##############################################
+# mailcatcher
+##############################################
+## mail:
+#    image: schickling/mailcatcher
+#    container_name: mail.dev.local
+#    ports:
+#      - "1080:1080"
+
+########################################
+# shared storage : useful for, e.g. sharing
+#   uploaded documents (img, others) between multiple services
+########################################
+volumes:
+   data:

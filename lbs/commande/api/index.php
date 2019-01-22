@@ -46,9 +46,14 @@ $db->addConnection(parse_ini_file("conf/conf.ini"));
 $db->setAsGlobal();
 $db->bootEloquent();
 
-$app->get('/commandes[/]', function (Request $request, Response $response, array $args) {
+$app->get('/commands[/]', function (Request $request, Response $response, array $args) {
     $controller = new lbs\commande\api\controller\apiController($this);
     return $controller->commandes($request, $response, $args);
+});
+
+$app->get('/commands/{id}[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\commande\api\controller\apiController($this);
+    return $controller->commande($request, $response, $args);
 });
 
 $app->run();

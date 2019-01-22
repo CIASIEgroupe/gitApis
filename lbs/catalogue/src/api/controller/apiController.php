@@ -3,7 +3,6 @@ namespace lbs\catalogue\api\controller;
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \lbs\catalogue\api\model\Categorie as Categorie;
-
 class apiController{
 	private $container;
 	public function __construct(\Slim\Container $container){

@@ -5,7 +5,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 use \lbs\commande\api\model\Commande as Commande;
 
 class apiController{
-	private $container;
+	private $container; 
 	public function __construct(\Slim\Container $container){
 		$this->container = $container;
 	}

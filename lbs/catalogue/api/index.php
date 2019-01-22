@@ -56,6 +56,21 @@ $app->get('/categories/{id}[/]', function (Request $request, Response $response,
     return $controller->categorie($request, $response, $args);
 });
 
+$app->get('/sandwichs[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->sandwichs($request, $response, $args);
+});
+
+$app->get('/sandwichs/{id}[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->sandwich($request, $response, $args);
+});
+
+$app->get('/categories/{id}/sandwichs[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->categorieSandwich($request, $response, $args);
+});
+
 $app->post('/categories/new[/]', function (Request $request, Response $response, array $args) {
     $controller = new lbs\catalogue\api\controller\apiController($this);
     $categorie = $controller->newCategorie($request, $response, $args);

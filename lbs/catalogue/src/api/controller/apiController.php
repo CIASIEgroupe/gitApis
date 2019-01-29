@@ -58,9 +58,23 @@ class apiController{
 	}
 
 	public function sandwichs(Request $rq, Response $rs, array $args){
-		//echo ($_GET['prixMax']);
 		try{
-			$sandwichs = Sandwich::all();
+			if (isset($_GET['typePain']) && isset($_GET['prixMax'])) {
+				if (isset($_GET['page'])) $sandwichs = Sandwich::where('type_pain', '=', $_GET['typePain'])->where('prix', '<', $_GET['prixMax'])->limit(2)->skip($_GET['page'])->get();
+				else $sandwichs = Sandwich::where('type_pain', '=', $_GET['typePain'])->where('prix', '<', $_GET['prixMax'])->get();
+			}
+			elseif (isset($_GET['typePain'])) {
+				if (isset($_GET['page']))$sandwichs = Sandwich::where('type_pain', '=', $_GET['typePain'])->limit(2)->skip($_GET['page'])->get();
+				else $sandwichs = Sandwich::where('type_pain', '=', $_GET['typePain'])->get();
+			}
+			elseif (isset($_GET['prixMax'])) {
+				if (isset($_GET['page']))$sandwichs = Sandwich::where('prix', '<', $_GET['prixMax'])->limit(2)->skip($_GET['page'])->get();
+				else $sandwichs = Sandwich::where('prix', '<', $_GET['prixMax'])->get();
+			}
+			else{
+				if (isset($_GET['page']))$sandwichs = Sandwich::limit(2)->skip($_GET['page'])->get();
+				else$sandwichs = Sandwich::all();
+			}
 			$data = [
 				"type" => "collection",
 				"count" => count($sandwichs),

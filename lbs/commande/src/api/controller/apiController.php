@@ -61,6 +61,7 @@ class apiController{
 				"error" => "404",
 				"message" => "ressouce non disponible /commands/".$args["id"]
 			];
+			//
 			$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(404);
 			$rs->getBody()->write(json_encode($data));
 			return $rs;	

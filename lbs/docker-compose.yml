@@ -66,6 +66,25 @@ services:
       - lbs_network
     links :
       - mysql_commande:db_commande
+
+  api.prisecommande:
+    image: canals/php:latest
+    environment:
+      - VHOST_HOSTNAME=api.prisecommande.local
+      - VHOST_DOCROOT=/var/www/api
+      - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+      - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
+    ports:
+      - "12080:80"
+      - "12443:443"
+    volumes :
+      - ./prisecommande/api:/var/www/api
+      - ./prisecommande/src:/var/www/src
+    working_dir : /var/www/src
+    networks:
+      - lbs_network
+    links :
+      - mysql_commande:db_commande
   
 #############################
 # mysql catalogue  + adminer
@@ -182,5 +201,5 @@ services:
 # shared storage : useful for, e.g. sharing
 #   uploaded documents (img, others) between multiple services
 ########################################
-volumes:
-   data:
+#volumes:
+#   data:

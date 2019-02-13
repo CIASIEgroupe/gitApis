@@ -99,8 +99,26 @@ class apiController{
 				"error" => "404",
 				"message" => "ressouce non disponible /commands/".$args["id"]
 			];
-			//
 			$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(404);
+			$rs->getBody()->write(json_encode($data));
+			return $rs;	
+		}
+	}
+
+	public function updateState(Request $rq, Response $rs, array $args){
+		$body = json_decode($rq->getBody());
+		$commande = Commande::find($args["id"]);
+		if($body->status >= $commande->status){
+			$commande->status = $body->status;
+			$commande->save();
+		}
+		else{
+			$data = [
+				"type" => "error",
+				"error" => "403",
+				"message" => "Impossible de modifier la ressource ".$args["id"]
+			];
+			$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(403);
 			$rs->getBody()->write(json_encode($data));
 			return $rs;	
 		}

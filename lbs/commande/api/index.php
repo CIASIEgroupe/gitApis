@@ -56,4 +56,9 @@ $app->get('/commands/{id}[/]', function (Request $request, Response $response, a
     return $controller->commande($request, $response, $args);
 });
 
+$app->put('/commands/{id}', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\commande\api\controller\apiController($this);
+    $controller->updateState($request, $response, $args);
+});
+
 $app->run();

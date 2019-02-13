@@ -13,13 +13,19 @@ class apiController{
 	public function newCommand(Request $rq, Response $rs, array $args){
 		$body = json_decode($rq->getBody());
 		$commande = new Commande();
-		$commande->nom = $body->nom;
+		var_dump($body);
+		/*$commande->nom = $body->nom;
 		$commande->mail = $body->mail;
-		$commande->livraison = date_create($body->date." ".$body->heure);
-		$commande->id = gen_uuid();
+		$commande->livraison = date_create($body->livraison->date." ".$body->livraison->heure);
+		$commande->id = apiController::gen_uuid();
+		$commande->save();
+		$data["commande"] = array("nom" => $commande->nom);
+		$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);
+		$rs->getBody()->write(json_encode($data));
+		return $rs;	*/
 	}
 
-	private function gen_uuid(){
+	public static function gen_uuid(){
 	 	$uuid = array(
 	  		'time_low' => 0,
 	  		'time_mid' => 0,

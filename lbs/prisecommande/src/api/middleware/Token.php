@@ -1,6 +1,7 @@
 <?php
 namespace lbs\prisecommande\api\middleware;
 use \lbs\prisecommande\api\model\Commande as Commande;
+use \lbs\prisecommande\api\model\Item as Item;
 class Token{
 	public static function new(){
 		$bin = random_bytes(32);
@@ -13,10 +14,17 @@ class Token{
 		$token = $rq->getHeader("X-lbs-token")[0];
 		if($token != null){
 			try{
-				$data["status"] = "200";
 				$commande = Commande::where("id", "=", $id)->where("token", "=", $token)->firstOrFail();
 				$date = date_create($commande->livraison);
-				$data["commande"] = array("nom" => $commande->nom, "mail" => $commande->mail, "livraison" => array("date" => $date->format("d-m-Y"), "heure" => $date->format("h:i")));				
+				$items = Item::where("command_id", "=", $commande->id)->get();
+				$data["type"] = "resource";
+				$data["status"] = "200";
+				$data["links"] = array("self" => "/commands/".$commande->id, "items" => "/commands/".$commande->id."/items");
+				$data["commande"] = array("id" => $commande->id, "livraison" => $date->format("d-m-Y h:i"), "nom" => $commande->nom, "mail" => $commande->mail, "status" => $commande->status, "montant" => $commande->montant);
+				$data["commande"]["items"] = array();
+				foreach ($items as $item){
+					array_push($data["commande"]["items"], array("uri" => $item->uri, "libelle" => $item->libelle, "tarif" => $item->tarif, "quantite" => $item->quantite));
+				}		
 			}
 			catch(\Exception $e){
 				$data = [

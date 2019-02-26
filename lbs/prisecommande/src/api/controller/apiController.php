@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \lbs\prisecommande\api\model\Commande as Commande;
+use \lbs\prisecommande\api\model\Item as Item;
 use \lbs\prisecommande\api\middleware\Token as Token;
 class apiController{
 	private $container;
@@ -29,18 +30,26 @@ class apiController{
 		$commande->mail = $body->mail;
 		date_default_timezone_set("Europe/Paris");
 		$commande->livraison = date_create($body->livraison->date." ".$body->livraison->heure);		
-		$commande->status = Commande::$created;
-		$responseGuzzle = $client->get("/sandwichs/6");
-		var_dump($responseGuzzle);
-		//$commande->save();
-		/*foreach ($body->items as $item) {
+		$commande->status = Commande::$created;		
+		$montant = 0;
+		foreach ($body->items as $item) {
 			$responseGuzzle = $client->get($item->uri);
-			var_dump($responseGuzzle);
-		}*/
-		$data["commande"] = array("nom" => $commande->nom, "mail" => $commande->mail, "livraison" => array("date" => $commande->livraison->format("d-m-Y"), "heure" => $commande->livraison->format("h:i")), "id" => $commande->id, "token" => $commande->token, "montant" => 0);
+			$bodyGuzzle = json_decode($responseGuzzle->getBody());
+			$i = new Item();
+			$i->uri = $item->uri;
+			$i->libelle = $bodyGuzzle->sandwich->nom;
+			$i->tarif = $bodyGuzzle->sandwich->prix;
+			$i->quantite = $item->q;
+			$i->command_id = $commande->id;
+			$i->save();
+			$montant += $i->tarif;
+		}
+		$commande->montant = $montant;
+		$commande->save();
+		$data["commande"] = array("nom" => $commande->nom, "mail" => $commande->mail, "livraison" => array("date" => $commande->livraison->format("d-m-Y"), "heure" => $commande->livraison->format("h:i")), "id" => $commande->id, "token" => $commande->token, "montant" => $montant, "items" => $body->items);
 		$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);
 		$rs->getBody()->write(json_encode($data));
-		//return $rs;
+		return $rs;
 	}
 
 	public function commande(Request $rq, Response $rs, array $args){

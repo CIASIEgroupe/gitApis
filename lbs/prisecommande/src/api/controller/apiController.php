@@ -28,7 +28,6 @@ class apiController{
 		$commande->token = Token::new();
 		$commande->nom = $body->nom;
 		$commande->mail = $body->mail;
-		date_default_timezone_set("Europe/Paris");
 		$commande->livraison = date_create($body->livraison->date." ".$body->livraison->heure);		
 		$commande->status = Commande::$created;		
 		$montant = 0;
@@ -53,10 +52,25 @@ class apiController{
 	}
 
 	public function commande(Request $rq, Response $rs, array $args){
-		$id = $args["id"];
 		$data = Token::check($rq, $rs, $args);
 		$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(intval($data["status"]));
 		$rs->getBody()->write(json_encode($data));
 		return $rs;
+	}
+
+	public function updateDate(Request $rq, Response $rs, array $args){
+		$commande = Commande::where("id", "=", $args["id"])->first();
+		$body = json_decode($rq->getBody());	
+		$commande->livraison = date_create($body->date);	
+		$commande->save();
+	}
+
+	public function updatePay(Request $rq, Response $rs, array $args){
+		$commande = Commande::where("id", "=", $args["id"])->first();
+		$body = json_decode($rq->getBody());	
+		$commande->ref_paiement = $body->ref_paiement;
+		$commande->date_paiement = $body->date_paiement;
+		$commande->mode_paiement = $body->mode_paiement;	
+		$commande->save();
 	}
 }

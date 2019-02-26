@@ -61,4 +61,15 @@ $app->get('/commands/{id}/items[/]', function (Request $request, Response $respo
     return $controller->items($request, $response, $args);
 });
 
+$app->put('/commands/{id}/date[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->updateDate($request, $response, $args);
+});
+
+$app->put('/commands/{id}/pay[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->updatePay($request, $response, $args);
+});
+
+
 $app->run();

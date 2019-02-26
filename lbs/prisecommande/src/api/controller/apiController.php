@@ -2,6 +2,7 @@
 namespace lbs\prisecommande\api\controller;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
+use GuzzleHttp\Client;
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \lbs\prisecommande\api\model\Commande as Commande;

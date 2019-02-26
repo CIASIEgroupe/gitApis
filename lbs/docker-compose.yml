@@ -72,6 +72,8 @@ services:
     environment:
       - VHOST_HOSTNAME=api.prisecommande.local
       - VHOST_DOCROOT=/var/www/api
+      - NO_PROXY=api.catalogue.local
+      - no_proxy=api.catalogue.local
       - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
       - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
     ports:
@@ -85,6 +87,7 @@ services:
       - lbs_network
     links :
       - mysql_commande:db_commande
+      - api.catalogue:api.catalogue.local
   
 #############################
 # mysql catalogue  + adminer

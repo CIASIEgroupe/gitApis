@@ -9,13 +9,20 @@ use \lbs\prisecommande\api\model\Commande as Commande;
 use \lbs\prisecommande\api\middleware\Token as Token;
 class apiController{
 	private $container;
+
 	public function __construct(\Slim\Container $container){
 		$this->container = $container;
 	}
 
 	public function newCommand(Request $rq, Response $rs, array $args){
+		//création client GuzzleHttp
+		$client = new \GuzzleHttp\Client([
+			'base_uri' => 'http://api.catalogue.local'
+		]);
+		//création objet commande
 		$body = json_decode($rq->getBody());
 		$commande = new Commande();
+		//création uuid avec Ramsey
 		$commande->id = Uuid::uuid1();
 		$commande->token = Token::new();
 		$commande->nom = $body->nom;
@@ -23,12 +30,13 @@ class apiController{
 		date_default_timezone_set("Europe/Paris");
 		$commande->livraison = date_create($body->livraison->date." ".$body->livraison->heure);		
 		$commande->status = Commande::$created;
+		$responseGuzzle = $client->get("/sandwichs/6");
+		var_dump($responseGuzzle);
 		//$commande->save();
-		var_dump($body->items);
-		foreach ($body->items as $item) {
-			$url = "http://api.catalogue.local:10080".$item->uri;
-			
-		}
+		/*foreach ($body->items as $item) {
+			$responseGuzzle = $client->get($item->uri);
+			var_dump($responseGuzzle);
+		}*/
 		$data["commande"] = array("nom" => $commande->nom, "mail" => $commande->mail, "livraison" => array("date" => $commande->livraison->format("d-m-Y"), "heure" => $commande->livraison->format("h:i")), "id" => $commande->id, "token" => $commande->token, "montant" => 0);
 		$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);
 		$rs->getBody()->write(json_encode($data));

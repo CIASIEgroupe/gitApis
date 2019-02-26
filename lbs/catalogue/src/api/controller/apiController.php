@@ -91,7 +91,7 @@ class apiController{
 
 	public function sandwich(Request $rq, Response $rs, array $args){
 		try{
-			$sandwich = Categorie::findOrFail($args["id"]);
+			$sandwich = Sandwich::findOrFail($args["id"]);
 			$data = [
 				"type" => "resource",
 				"sandwich" => $sandwich

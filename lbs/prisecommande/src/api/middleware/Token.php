@@ -10,11 +10,10 @@ class Token{
 	}
 
 	public static function check($rq, $rs, $args){
-		$id = $args["id"];
 		$token = $rq->getHeader("X-lbs-token")[0];
 		if($token != null){
 			try{
-				$commande = Commande::where("id", "=", $id)->where("token", "=", $token)->firstOrFail();
+				$commande = Commande::where("id", "=", $args["id"])->where("token", "=", $token)->firstOrFail();
 				$date = date_create($commande->livraison);
 				$items = Item::where("command_id", "=", $commande->id)->get();
 				$data["type"] = "resource";

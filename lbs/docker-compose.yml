@@ -74,6 +74,7 @@ services:
       - VHOST_DOCROOT=/var/www/api
       - NO_PROXY=api.catalogue.local
       - no_proxy=api.catalogue.local
+      - secret=secretkey
       - http_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
       - https_proxy=http://www-cache.iutnc.univ-lorraine.fr:3128/
     ports:

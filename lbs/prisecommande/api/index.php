@@ -53,7 +53,7 @@ $app->post('/commands[/]', function (Request $request, Response $response, array
 
 $app->get('/commands/{id}[/]', function (Request $request, Response $response, array $args) {
     $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->commande($request, $response, $args);
+    return $controller->command($request, $response, $args);
 });
 
 $app->get('/commands/{id}/items[/]', function (Request $request, Response $response, array $args) {
@@ -71,5 +71,24 @@ $app->put('/commands/{id}/pay[/]', function (Request $request, Response $respons
     return $controller->updatePay($request, $response, $args);
 });
 
+$app->post('/client/{id}/auth[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->login($request, $response, $args);
+});
+
+$app->post('/client/register[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->register($request, $response, $args);
+});
+
+$app->get('/client/{id}[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->profile($request, $response, $args);
+});
+
+$app->get('/client/{id}/commands[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\prisecommande\api\controller\apiController($this);
+    return $controller->commands($request, $response, $args);
+});
 
 $app->run();

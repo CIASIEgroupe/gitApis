@@ -78,7 +78,7 @@ $app->get('/categories/{id}/sandwichs[/]', function (Request $request, Response 
 
 
 
-$app->post('/categories/new[/]', function (Request $request, Response $response, array $args) {
+/*$app->post('/categories/new[/]', function (Request $request, Response $response, array $args) {
     $controller = new lbs\catalogue\api\controller\apiController($this);
     $categorie = $controller->newCategorie($request, $response, $args);
     return $response->withJson($categorie, 201);
@@ -89,6 +89,28 @@ $app->put('/categories/update[/]', function (Request $request, Response $respons
     $categorie = $controller->updateCategorie($request, $response, $args);
     return $response->withJson($categorie, 200);
 
+});*/
+
+
+$app->get('/sandwichsCateg[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->sandwichsCateg($request, $response, $args);
 });
+
+$app->post('/newSandwich[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->newSandwich($request, $response, $args);
+});
+
+$app->delete('/delSandwich/{id}[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->delSandwich($request, $response, $args);
+});
+
+$app->put('/updateSandwich[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\catalogue\api\controller\apiController($this);
+    return $controller->updateSandwich($request, $response, $args);
+});
+
 
 $app->run();

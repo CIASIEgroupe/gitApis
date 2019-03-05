@@ -61,4 +61,9 @@ $app->put('/commands/{id}', function (Request $request, Response $response, arra
     $controller->updateState($request, $response, $args);
 });
 
+$app->post('/clients/{id}/authHTT/1.1[/]', function (Request $request, Response $response, array $args) {
+    $controller = new lbs\commande\api\controller\apiController($this);
+    return $controller->clients($request, $response, $args);
+});
+
 $app->run();

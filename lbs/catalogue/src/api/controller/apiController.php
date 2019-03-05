@@ -4,6 +4,8 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \lbs\catalogue\api\model\Categorie as Categorie;
 use \lbs\catalogue\api\model\Sandwich as Sandwich;
+use \lbs\catalogue\api\model\Sand2Cat as Sand2Cat;
+
 class apiController{
 	private $container;
 	public function __construct(\Slim\Container $container){
@@ -138,7 +140,7 @@ class apiController{
 		}
 	}
 
-	public function newCategorie(Request $rq, Response $rs, array $args){
+	/*public function newCategorie(Request $rq, Response $rs, array $args){
 		$parsedBody = $rq->getParsedBody();
 		$categorie = new Categorie();
 		$categorie->nom = $parsedBody["nom"];
@@ -154,5 +156,52 @@ class apiController{
 		$categorie->description = $parsedBody["description"];
 		$categorie->save();
 		return $categorie;
+	}*/
+
+
+
+
+
+	public function sandwichsCateg(Request $rq, Response $rs, array $args){
+		try{
+			$c = Categorie::select()->with('sandwiches')->get();
+			$data = [
+				"type" => "collection",
+				"count" => count($c),
+				"categories" => $c
+			];			
+			$rs = $rs->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);
+			$rs->getBody()->write(json_encode($data));
+			return $rs;
+		}
+		catch(\Exception $e){
+			return json_encode("erreur categories()");
+		}
+	}
+
+	public function newSandwich(Request $rq, Response $rs, array $args){
+		$body = json_decode($rq->getBody());
+		$sandwich = new sandwich;
+		$sandwich->nom = $body->nom;
+		$sandwich->description = $body->description;
+		$sandwich->type_pain = $body->type_pain;
+		$sandwich->prix = $body->prix;
+		$sandwich->save();
+		$sandwich->categories()->attach([$body->categorie]);
+	}
+
+	public function delSandwich(Request $rq, Response $rs, array $args){
+		$sand = sandwich::find($args['id']);
+		$sand->delete();
+	}
+
+	public function updateSandwich(Request $rq, Response $rs, array $args){
+		$body = json_decode($rq->getBody());
+		$sandwich = sandwich::find($body->id);
+		$sandwich->nom = $body->nom;
+		$sandwich->description = $body->description;
+		$sandwich->type_pain = $body->type_pain;
+		$sandwich->prix = $body->prix;
+		$sandwich->save();
 	}
 }

@@ -34,8 +34,12 @@ class Controller{
 		try{
 			$data = [
 				"type" => "resource",
-				"locale" => "fr-FR",
-				"categorie" => Categorie::findOrFail($args["id"])
+				"date" => date("d-m-Y"),
+				"categorie" => Categorie::findOrFail($args["id"]),
+				"links" => [
+					"sandwichs" => $request->getUri()->getPath()."/sandwichs",
+					"self" => $request->getUri()->getPath()
+				]
 			];			
 			$response->getBody()->write(json_encode($data));
 			return $this->container->ok;

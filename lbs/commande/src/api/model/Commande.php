@@ -1,5 +1,5 @@
 <?php
-namespace lbs\commande\api\model;
+namespace commande\api\model;
 
 class Commande extends \Illuminate\Database\Eloquent\Model{
 	protected $table = "commande";

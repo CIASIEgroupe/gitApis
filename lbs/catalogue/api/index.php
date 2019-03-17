@@ -1,11 +1,4 @@
 <?php
-/**
- * File:  index.php
- * Creation Date: 17/10/2018
- * description:
- *
- * @author:
- */
 require_once "../src/vendor/autoload.php";
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
@@ -13,32 +6,71 @@ use \Psr\Http\Message\ResponseInterface as Response;
 $config = ['settings' => [
     'determineRouteBeforeAppMiddleware' => true,
     'displayErrorDetails' => true,
-    'addContentLengthHeader' => false,
-    'db' => [
-        'driver' => 'mysql',
-        'host' => 'db',
-        'database' => 'catalogue_lbs',
-        'username' => 'catalogue_lbs',
-        'password' => 'catalogue_lbs',
-        'charset'   => 'utf8',
-        'collation' => 'utf8_general_ci'
-    ]
+    'addContentLengthHeader' => false
 ]];
 
 $app = new \Slim\App($config);
 
-$c = $app->getContainer();
+$container = $app->getContainer();
 
-$container["notFoundHandler"] = function ($c) {
-    return function ($request, $response) use ($c) {
-        throw new Exception("Api Not Found", 404);
-    };
+$container['ok'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);  
+    return $response;
 };
 
-$container["notAllowedHandler"] = function ($c) {
-    return function ($request, $response) use ($c) {
-        throw new Exception("Method Not Allowed", 405);
+$container['created'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(201);  
+    return $response;
+};
+
+$container['noContent'] = function ($container) {
+    $response = $container->response->withStatus(204);
+    return $response;
+};
+
+$container['badRequest'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(400);
+    $data = [
+        "type" => "error",
+        "error" => "400",
+        "message" => "Bad Request ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+$container['notFound'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(404);
+    $data = [
+        "type" => "error",
+        "error" => "404",
+        "message" => "Ressource indisponible: ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+/*$container['notAllowed'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(405);
+    $data = [
+        "type" => "error",
+        "error" => "405",
+        "message" => "Méthode pas autorisée: ".$container->request->getMethod." ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};*/
+
+/*$container["errorHandler"] = function($container){
+    return function($request, $response, $exception) use ($container){
+        return $response->withStatus(500)
+            ->withHeader("Content-Type", "text/html")
+            ->write("Une erreur dans le code !");
     };
+};*/
+
+$container["Controller"] = function($container){
+    return new \catalogue\api\controller\Controller($container);
 };
 
 $db = new Illuminate\Database\Capsule\Manager();
@@ -46,71 +78,6 @@ $db->addConnection(parse_ini_file("conf/conf.ini"));
 $db->setAsGlobal();
 $db->bootEloquent();
 
-$app->get('/categories[/]', function (Request $request, Response $response, array $args) {
-	$controller = new lbs\catalogue\api\controller\apiController($this);
-	return $controller->categories($request, $response, $args);
-});
-
-$app->get('/categories/{id}[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->categorie($request, $response, $args);
-});
-
-$app->get('/sandwichs[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->sandwichs($request, $response, $args);
-});
-
-$app->get('/sandwichs/{id}[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->sandwich($request, $response, $args);
-});
-
-$app->get('/categories/{id}/sandwichs[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->categorieSandwich($request, $response, $args);
-});
-
-
-
-
-
-
-
-
-/*$app->post('/categories/new[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    $categorie = $controller->newCategorie($request, $response, $args);
-    return $response->withJson($categorie, 201);
-});
-
-$app->put('/categories/update[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    $categorie = $controller->updateCategorie($request, $response, $args);
-    return $response->withJson($categorie, 200);
-
-});*/
-
-
-$app->get('/sandwichsCateg[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->sandwichsCateg($request, $response, $args);
-});
-
-$app->post('/newSandwich[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->newSandwich($request, $response, $args);
-});
-
-$app->delete('/delSandwich/{id}[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->delSandwich($request, $response, $args);
-});
-
-$app->put('/updateSandwich[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\catalogue\api\controller\apiController($this);
-    return $controller->updateSandwich($request, $response, $args);
-});
-
+require __DIR__."/routes.php";
 
 $app->run();

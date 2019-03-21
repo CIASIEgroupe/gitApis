@@ -1,5 +1,5 @@
 <?php
-namespace lbs\prisecommande\api\model;
+namespace prisecommande\api\model;
 
 class Client extends \Illuminate\Database\Eloquent\Model{
 	protected $table = "client";

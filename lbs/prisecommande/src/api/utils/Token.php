@@ -1,5 +1,5 @@
 <?php
-namespace lbs\prisecommande\api\middleware;
+namespace prisecommande\api\utils;
 use \lbs\prisecommande\api\model\Commande as Commande;
 use \lbs\prisecommande\api\model\Item as Item;
 class Token{

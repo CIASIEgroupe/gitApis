@@ -23,7 +23,7 @@ class Controller{
 			}
 			$commandes = $commandes->limit($size);
 			$p = 0;
-			$count = Commande::count();
+			$count = count($commandes);
 			if($request->getParam("page")){
 				if(intdiv($count, $size) <= $request->getParam("page")){
 					$p = intdiv($count, $size);
@@ -37,7 +37,7 @@ class Controller{
 					"command" => $commande,
 					"links" => [
 						"self" => [
-							"href" => "/command/".$commande->id
+							"href" => "/commands/".$commande->id
 						]
 					]
 				];

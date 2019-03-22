@@ -2,7 +2,7 @@
 $app->get('/categories', "Controller:categories");
 $app->get('/categories/sandwichs', "Controller:categoriesSandwichs");
 $app->get('/categories/{id}', "Controller:categorie");
-$app->get('/categories/{id}/sandwichs', "Controller:categorieSandwich");
+$app->get('/categories/{id}/sandwichs', "Controller:categorieSandwichs");
 $app->post('/categories', "Controller:newCategorie");
 $app->put('/categories/{id}', "Controller:updateCategorie");
 $app->get('/sandwichs', "Controller:sandwichs");

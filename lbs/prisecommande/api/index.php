@@ -13,22 +13,22 @@ $app = new \Slim\App($config);
 
 $container = $app->getContainer();
 
-$container['ok'] = function ($container) {
+$container['ok'] = function ($container){
     $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);  
     return $response;
 };
 
-$container['created'] = function ($container) {
+$container['created'] = function ($container){
     $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(201);  
     return $response;
 };
 
-$container['noContent'] = function ($container) {
+$container['noContent'] = function ($container){
     $response = $container->response->withStatus(204);
     return $response;
 };
 
-$container['badRequest'] = function ($container) {
+$container['badRequest'] = function ($container){
     $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(400);
     $data = [
         "type" => "error",
@@ -39,18 +39,35 @@ $container['badRequest'] = function ($container) {
     return $response;
 };
 
-$container['noHeader'] = function ($container) {
-    $response = $c->response->withHeader('Content-type', "text/html")->withStatus(401);
+$container['unauthorized'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "text/html")->withStatus(401);
+    $response->getBody()->write("Unauthorized");
+    return $response;
+};
+
+$container['noHeader'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json charset=utf-8")->withStatus(401);
     $data = [
         "type" => "error",
         "error" => "401",
         "message" => "Header Authorization missing or wrong"
     ];
-    $response->getBody()->write($data);
+    $response->getBody()->write(json_encode($data));
     return $response;
 };
 
-$container['notFound'] = function ($container) {
+$container['noToken'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json charset=utf-8")->withStatus(401);
+    $data = [
+        "type" => "error",
+        "error" => "401",
+        "message" => "Token missing or wrong"
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+$container['notFound'] = function ($container){
     $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(404);
     $data = [
         "type" => "error",

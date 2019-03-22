@@ -9,37 +9,20 @@ class Token{
 		return $token;
 	}
 
-	public static function check($rq, $rs, $args){
-		$token = $rq->getHeader("X-lbs-token")[0];
-		if($token != null){
-			try{
-				$commande = Commande::where("id", "=", $args["id"])->where("token", "=", $token)->firstOrFail();
-				$date = date_create($commande->livraison);
-				$items = Item::where("command_id", "=", $commande->id)->get();
-				$data["type"] = "resource";
-				$data["status"] = "200";
-				$data["links"] = array("self" => "/commands/".$commande->id, "items" => "/commands/".$commande->id."/items");
-				$data["commande"] = array("id" => $commande->id, "livraison" => $date->format("d-m-Y h:i"), "nom" => $commande->nom, "mail" => $commande->mail, "status" => $commande->status, "montant" => $commande->montant);
-				$data["commande"]["items"] = array();
-				foreach ($items as $item){
-					array_push($data["commande"]["items"], array("uri" => $item->uri, "libelle" => $item->libelle, "tarif" => $item->tarif, "quantite" => $item->quantite));
-				}		
+	public static function check($request){
+		try{
+			$tokenURL = $request->getParam("token");
+			if($tokenURL != null){
+				return $tokenURL;
 			}
-			catch(\Exception $e){
-				$data = [
-					"type" => "error",
-					"status" => "403",
-					"message" => "Mauvais token"
-				]; 
-			}	
+			$tokenHeader = $request->getHeader("X-lbs-token");
+			if($tokenHeader != null){
+				return $tokenHeader;
+			}
+			return false;
 		}
-		else{
-			$data = [
-				"type" => "error",
-				"status" => "401",
-				"message" => "Token absent"
-			];
+		catch(\Exception $e){
+			return false;
 		}
-		return $data	;
 	}
 }

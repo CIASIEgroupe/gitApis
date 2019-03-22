@@ -8,8 +8,8 @@ use \Psr\Http\Message\ResponseInterface as Response;
 use \prisecommande\api\model\Commande as Commande;
 use \prisecommande\api\model\Item as Item;
 use \prisecommande\api\model\Client as Client;
-use \prisecommande\api\middleware\Token as Token;
-use \prisecommande\api\middleware\TokenJWT as TokenJWT;
+use \prisecommande\api\utils\Token as Token;
+use \prisecommande\api\utils\TokenJWT as TokenJWT;
 
 class Controller{
 	private $container;
@@ -29,7 +29,7 @@ class Controller{
 			$commande->token = Token::new();
 			$commande->nom = $body->nom;
 			$commande->mail = $body->mail;
-			$commande->livraison = date_create($body->livraison->date." ".$body->livraison->heure);		
+			$commande->livraison = $body->livraison->date." ".$body->livraison->heure;		
 			$commande->status = Commande::$created;
 			$tokenJWT = TokenJWT::check($request);
 			if($tokenJWT){
@@ -54,8 +54,8 @@ class Controller{
 				"nom" => $commande->nom,
 				"mail" => $commande->mail,
 				"livraison" => [
-					"date" => $commande->livraison->format("d-m-Y"),
-					"heure" => $commande->livraison->format("h:i")
+					"date" => $body->livraison->date,
+					"heure" => $body->livraison->heure
 				],
 				"id" => $commande->id,
 				"token" => $commande->token,
@@ -73,7 +73,11 @@ class Controller{
 
 	public function command(Request $request, Response $response, array $args){
 		try{
-			$command = Commande::select(["id", "created_at", "updated_at", "livraison", "montant", "remise", "token", "status"])->firstOrFail($args["id"])
+			$command = Commande::select(["id", "created_at", "updated_at", "livraison", "montant", "remise", "token", "status"])->findOrFail($args["id"]);
+			$token = Token::check($request);
+			if(!$token || $token != $command->token){
+				return $this->container->noToken;
+			}
 			$data["command"] = $command;
 			$response = $this->container->ok;
 			$response->getBody()->write(json_encode($data));
@@ -87,8 +91,8 @@ class Controller{
 	public function updateDate(Request $request, Response $response, array $args){
 		try{			
 			$body = json_decode($request->getBody());
-			$command = Commande::firstOrFail($args["id"]);
-			$command->livraison = date_create($body->date);	
+			$command = Commande::findOrFail($args["id"]);
+			$command->livraison = $body->livraison->date." ".$body->livraison->heure;	
 			$command->save();
 			return $this->container->noContent;
 		}
@@ -100,15 +104,20 @@ class Controller{
 	public function updatePay(Request $request, Response $response, array $args){
 		try{
 			$body = json_decode($request->getBody());
-			$command = Commande::firstOrFail($args["id"]);
+			$command = Commande::findOrFail($args["id"]);
 			$command->ref_paiement = $body->ref_paiement;
 			$command->date_paiement = $body->date_paiement;
 			$command->mode_paiement = $body->mode_paiement;
 			$tokenJWT = TokenJWT::check($request);
 			if($tokenJWT){
 				$command->remise = $body->remise;
-				$client = Client::firstOrFail($tokenJWT->data);
-				$client->cumul = 0;
+				$client = Client::findOrFail($tokenJWT->data);
+				if($body->cumul == 1){
+					$client->cumul = 0;
+				}
+				else{
+					$client->cumul += 1;
+				}
 				$client->save();
 			}
 			$command->save();
@@ -147,12 +156,12 @@ class Controller{
 
 	public function login(Request $request, Response $response, array $args){
 		$body = json_decode($request->getBody());
-		$clien_verif = Client::where("mail", "=", $body->mail)->first();
+		$client = Client::find($args["id"]);
 		if($client != null && password_verify($body->password, $client->password)){
 			unset($client->password);			
-			$data = ["client" => $client->login];
-			$tokenJWT = TokenJWT::new($client->id);
+			$data["client"] = $client->mail;
 			$response = $this->container->ok;
+			$tokenJWT = TokenJWT::new($client->id);
 			$response = $response->withHeader("Authorization", "Bearer ".$tokenJWT);
 			$response->getBody()->write(json_encode($data));
 			return $response;

@@ -88,6 +88,23 @@ class Controller{
 		}
 	}
 
+	public function updateCommand(Request $request, Response $response, array $args){
+		$update = $request->getParam("update");
+		if($update){
+			if($update == "date"){
+				$response = $this->updateDate($request, $response, $args);
+			}
+			elseif($update == "pay"){
+				$response = $this->updatePay($request, $response, $args);
+			}
+			else{
+				$response = $this->container->badRequest;
+			}
+			return $response;
+		}
+		return $this->container->badRequest;
+	}
+
 	public function updateDate(Request $request, Response $response, array $args){
 		try{			
 			$body = json_decode($request->getBody());

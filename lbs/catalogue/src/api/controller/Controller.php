@@ -58,6 +58,7 @@ class Controller{
 			$categorie->save();
 			$data = [
 				"type" => "resource",
+				"date" => date("d-m-Y"),
 				"locale" => "fr-FR",
 				"categorie" => $categorie
 			];
@@ -81,6 +82,7 @@ class Controller{
 				$categorie->save();
 				$data = [
 					"type" => "resource",
+					"date" => date("d-m-Y"),
 					"locale" => "fr-FR",
 					"categorie" => $categorie
 				];
@@ -214,7 +216,7 @@ class Controller{
 		try{
 			$body = json_decode($request->getBody());
 			if($body != null){
-				$sandwich = Sandwich::findOrFail($body->id);
+				$sandwich = Sandwich::findOrFail($args["id"]);
 				$sandwich->nom = $body->nom;
 				$sandwich->description = $body->description;
 				$sandwich->type_pain = $body->type_pain;
@@ -244,7 +246,7 @@ class Controller{
 			return $this->container->noContent;
 		}
 		catch(\Exception $e){
-			return $this->container->forbidden;
+			return $this->container->notFound;
 		}
 	}
 }

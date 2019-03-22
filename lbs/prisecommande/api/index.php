@@ -1,11 +1,4 @@
 <?php
-/**
- * File:  index.php
- * Creation Date: 17/10/2018
- * description:
- *
- * @author:
- */
 require_once "../src/vendor/autoload.php";
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
@@ -13,32 +6,99 @@ use \Psr\Http\Message\ResponseInterface as Response;
 $config = ['settings' => [
     'determineRouteBeforeAppMiddleware' => true,
     'displayErrorDetails' => true,
-    'addContentLengthHeader' => false,
-    'db' => [
-        'driver' => 'mysql',
-        'host' => 'db_commande',
-        'database' => 'commande_lbs',
-        'username' => 'commande_lbs',
-        'password' => 'commande_lbs',
-        'charset'   => 'utf8',
-        'collation' => 'utf8_general_ci'
-    ]
+    'addContentLengthHeader' => false
 ]];
 
 $app = new \Slim\App($config);
 
-$c = $app->getContainer();
+$container = $app->getContainer();
 
-$container["notFoundHandler"] = function ($c) {
-    return function ($request, $response) use ($c) {
-        throw new Exception("Api Not Found", 404);
-    };
+$container['ok'] = function ($container){
+    $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(200);  
+    return $response;
 };
 
-$container["notAllowedHandler"] = function ($c) {
-    return function ($request, $response) use ($c) {
-        throw new Exception("Method Not Allowed", 405);
+$container['created'] = function ($container){
+    $response = $container->response->withHeader('Content-type', 'application/json; charset=utf-8')->withStatus(201);  
+    return $response;
+};
+
+$container['noContent'] = function ($container){
+    $response = $container->response->withStatus(204);
+    return $response;
+};
+
+$container['badRequest'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(400);
+    $data = [
+        "type" => "error",
+        "error" => "400",
+        "message" => "Bad Request ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+$container['unauthorized'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "text/html")->withStatus(401);
+    $response->getBody()->write("Unauthorized");
+    return $response;
+};
+
+$container['noHeader'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json charset=utf-8")->withStatus(401);
+    $data = [
+        "type" => "error",
+        "error" => "401",
+        "message" => "Header Authorization missing or wrong"
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+$container['noToken'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json charset=utf-8")->withStatus(401);
+    $data = [
+        "type" => "error",
+        "error" => "401",
+        "message" => "Token missing or wrong"
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+$container['notFound'] = function ($container){
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(404);
+    $data = [
+        "type" => "error",
+        "error" => "404",
+        "message" => "Ressource indisponible: ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};
+
+/*$container['notAllowed'] = function ($container) {
+    $response = $container->response->withHeader('Content-type', "application/json; charset=utf-8")->withStatus(405);
+    $data = [
+        "type" => "error",
+        "error" => "405",
+        "message" => "Méthode pas autorisée: ".$container->request->getMethod." ".$container->request->getUri()->getPath()
+    ];
+    $response->getBody()->write(json_encode($data));
+    return $response;
+};*/
+
+/*$container["errorHandler"] = function($container){
+    return function($request, $response, $exception) use ($container){
+        return $response->withStatus(500)
+            ->withHeader("Content-Type", "text/html")
+            ->write("Une erreur dans le code !");
     };
+};*/
+
+$container["Controller"] = function($container){
+    return new \prisecommande\api\controller\Controller($container);
 };
 
 $db = new Illuminate\Database\Capsule\Manager();
@@ -46,49 +106,6 @@ $db->addConnection(parse_ini_file("conf/conf.ini"));
 $db->setAsGlobal();
 $db->bootEloquent();
 
-$app->post('/commands[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->newCommand($request, $response, $args);
-});
-
-$app->get('/commands/{id}[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->command($request, $response, $args);
-});
-
-$app->get('/commands/{id}/items[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->items($request, $response, $args);
-});
-
-$app->put('/commands/{id}/date[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->updateDate($request, $response, $args);
-});
-
-$app->put('/commands/{id}/pay[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->updatePay($request, $response, $args);
-});
-
-$app->post('/client/{id}/auth[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->login($request, $response, $args);
-});
-
-$app->post('/client/register[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->register($request, $response, $args);
-});
-
-$app->get('/client/{id}[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->profile($request, $response, $args);
-});
-
-$app->get('/client/{id}/commands[/]', function (Request $request, Response $response, array $args) {
-    $controller = new lbs\prisecommande\api\controller\apiController($this);
-    return $controller->commands($request, $response, $args);
-});
+require __DIR__."/routes.php";
 
 $app->run();

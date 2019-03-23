@@ -153,6 +153,15 @@ class Controller{
 				$client->mail = $body->mail;
 				$client->password = password_hash($body->password, PASSWORD_DEFAULT);
 				$client->save();
+				$data = [
+					"type" => "resource",
+					"date" => date("d-m-Y"),
+					"client" => [
+						"id" => $client->id
+						"mail" => $client->mail
+					]
+				];
+				$response->getBody()->write(json_encode($data));
 				return $this->container->created;
 			}
 			else{
@@ -196,8 +205,8 @@ class Controller{
 			$data = [
 				"client" => $client,
 				"links" => [
-					"self" => "/client/".$jwt->id,
-					"commands" => "/client/".$jwt->id."/commands"
+					"self" => "/client/".$tokenJWT->id,
+					"commands" => "/client/".$tokenJWT->id."/commands"
 				]
 			];
 			$response = $this->container->ok;

@@ -26,6 +26,9 @@ class TokenJWT{
 	public static function check($request){
 		try{ 
 			$authorization = $request->getHeader("Authorization");
+			if(!$authorization){
+				return false;
+			}
 			$tokenJWT = explode(" ", $authorization[0])[1];
 			return TokenJWT::decode($tokenJWT);
 		} 

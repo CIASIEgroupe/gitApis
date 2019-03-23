@@ -50,17 +50,21 @@ class Controller{
 			}
 			$commande->montant = $montant;
 			$commande->save();
-			$data["commande"] = [
-				"nom" => $commande->nom,
-				"mail" => $commande->mail,
-				"livraison" => [
-					"date" => $body->livraison->date,
-					"heure" => $body->livraison->heure
-				],
-				"id" => $commande->id,
-				"token" => $commande->token,
-				"montant" => $montant,
-				"items" => $body->items
+			$data = [
+				"type" => "resource",
+				"date" => date("d-m-Y"),
+				"commande" => [
+					"nom" => $commande->nom,
+					"mail" => $commande->mail,
+					"livraison" => [
+						"date" => $body->livraison->date,
+						"heure" => $body->livraison->heure
+					],
+					"id" => $commande->id,
+					"token" => $commande->token,
+					"montant" => $montant,
+					"items" => $body->items
+				]
 			];
 			$response = $this->container->ok;
 			$response->getBody()->write(json_encode($data));
@@ -78,7 +82,15 @@ class Controller{
 			if(!$token || $token != $command->token){
 				return $this->container->noToken;
 			}
-			$data["command"] = $command;
+			$data = [
+				"type" => "resource",
+				"date" => date("d-m-Y"),
+				"command" => $command,
+				"links" => [
+					"self" => "/commands/".$command->id,
+					"items" => "/commands/".$command->id."/items"
+				]
+			];
 			$response = $this->container->ok;
 			$response->getBody()->write(json_encode($data));
 			return $response;
@@ -153,6 +165,7 @@ class Controller{
 				$client->mail = $body->mail;
 				$client->password = password_hash($body->password, PASSWORD_DEFAULT);
 				$client->save();
+				$response = $response->withHeader("Location", "/clients/".$client->id);
 				return $this->container->created;
 			}
 			else{
@@ -175,8 +188,15 @@ class Controller{
 		$body = json_decode($request->getBody());
 		$client = Client::find($args["id"]);
 		if($client != null && password_verify($body->password, $client->password)){
-			unset($client->password);			
-			$data["client"] = $client->mail;
+			$data = [
+				"type" => "resource",
+				"error" => date("d-m-Y"),
+				"client" => $client->mail,
+				"links" => [
+					"self" => "/clients/".$client->id,
+					"commands" => "/clients/".$client->id."/commands"
+				]
+			];
 			$response = $this->container->ok;
 			$tokenJWT = TokenJWT::new($client->id);
 			$response = $response->withHeader("Authorization", "Bearer ".$tokenJWT);
@@ -194,10 +214,12 @@ class Controller{
 			}
 			$client = Client::select(["id", "mail", "cumul", "created_at"])->findOrFail($tokenJWT->data);
 			$data = [
+				"type" => "resource",
+				"date" => date("d-m-Y"),
 				"client" => $client,
 				"links" => [
-					"self" => "/client/".$jwt->id,
-					"commands" => "/client/".$jwt->id."/commands"
+					"self" => "/client/".$tokenJWT->data,
+					"commands" => "/client/".$tokenJWT->data."/commands"
 				]
 			];
 			$response = $this->container->ok;
@@ -216,7 +238,11 @@ class Controller{
 				return $this->container->noHeader;
 			}
 			$commands = Commande::select(["id", "created_at", "updated_at", "livraison", "montant", "remise", "token", "status"])->where("client_id", "=", $args["id"])->orderBy("created_at", "asc")->get();
-			$data["commands"] = $commands;
+			$data = [
+				"type" => "collection",
+				"date" => date("d-m-Y"),
+				"commands" => $commands
+			];
 			$response = $this->container->ok;
 			$response->getBody()->write(json_encode($data));
 			return $response;

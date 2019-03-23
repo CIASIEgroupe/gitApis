@@ -80,4 +80,6 @@ $db->bootEloquent();
 
 require __DIR__."/routes.php";
 
+$app->add(new \catalogue\api\middleware\Cors($c));
+
 $app->run();

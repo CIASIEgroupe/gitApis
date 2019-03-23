@@ -108,6 +108,6 @@ $db->bootEloquent();
 
 require __DIR__."/routes.php";
 
-$app->add(new \prisecommande\api\middleware\Cors($c));
+$app->add(new \prisecommande\api\middleware\Cors($container));
 
 $app->run();

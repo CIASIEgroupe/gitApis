@@ -44,7 +44,7 @@ class Controller{
 				array_push($c, $element);
 			}
 			$page_prev = $request->getParam("page") - 1;
-			if($request->getParam("page") < 0){
+			if($page_prev < 0){
 				$page_prev == 0;
 			}
 			$data = [
@@ -70,7 +70,7 @@ class Controller{
 
 	public function commande(Request $request, Response $response, array $args){
 		try{
-			$commande = Commande::select(["id", "created_at", "livraison", "nom", "mail", "montant"])->findOrFail($args["id"]);
+			$commande = Commande::select(["id", "created_at", "livraison", "nom", "mail", "status", "montant"])->findOrFail($args["id"]);
 			$data = [
 				"type" => "resource",
 				"links" => [
@@ -84,38 +84,28 @@ class Controller{
 			foreach ($items as $item){
 				array_push($data["items"], $item);
 			}
-			$response = $response->withHeader('Content-type', 'application/json; charesponseet=utf-8')->withStatus(200);
+			$response = $this->container->ok;
 			$response->getBody()->write(json_encode($data));
 			return $response;
 		}
 		catch(\Exception $e){
-			$data = [
-				"type" => "error",
-				"error" => "404",
-				"message" => "ressouce non disponible /commands/".$args["id"]
-			];
-			$response = $response->withHeader('Content-type', 'application/json; charesponseet=utf-8')->withStatus(404);
-			$response->getBody()->write(json_encode($data));
-			return $response;	
+			return $this->container->notFound;
 		}
 	}
 
 	public function updateState(Request $request, Response $response, array $args){
-		$body = json_decode($request->getBody());
-		$commande = Commande::find($args["id"]);
-		if($body->status >= $commande->status){
-			$commande->status = $body->status;
-			$commande->save();
+		try{
+			$body = json_decode($request->getBody());
+			$commande = Commande::findOrFail($args["id"]);
+			if($body->status > $commande->status){
+				$commande->status = $body->status;
+				$commande->save();
+				return $this->container->noContent;
+			}
+			return $this->container->badRequest;
 		}
-		else{
-			$data = [
-				"type" => "error",
-				"error" => "403",
-				"message" => "Impossible de modifier la ressource ".$args["id"]
-			];
-			$response = $response->withHeader('Content-type', 'application/json; charesponseet=utf-8')->withStatus(403);
-			$response->getBody()->write(json_encode($data));
-			return $response;	
+		catch(\Exception $e){
+			return $this->container->badRequest;
 		}
 	}
 }

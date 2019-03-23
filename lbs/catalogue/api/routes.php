@@ -92,6 +92,9 @@ Erreur: HTTP/1.1 404 Not Found
 }
 */
 $app->get('/categories/{id}', "Controller:categorie");
+<<<<<<< HEAD
+$app->get('/categories/{id}/sandwichs', "Controller:categorieSandwichs");
+=======
 
 /*
 GET: /categories/{id}/sandwichs
@@ -157,6 +160,7 @@ Erreur: HTTP/1.1 400 Bad Request
   "message" : "Bad Request /categories"
 }
 */
+>>>>>>> 73c71feef6cf1ece7c73e05a61fca58df0eaef6d
 $app->post('/categories', "Controller:newCategorie");
 
 /*
